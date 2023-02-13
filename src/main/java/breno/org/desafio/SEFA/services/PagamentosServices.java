@@ -1,17 +1,21 @@
 package breno.org.desafio.SEFA.services;
 
+import breno.org.desafio.SEFA.DTO.FiltroDTO;
 import breno.org.desafio.SEFA.DTO.PagamentosDTO;
 import breno.org.desafio.SEFA.DTO.StatusDTO;
 import breno.org.desafio.SEFA.model.Pagamentos;
 import breno.org.desafio.SEFA.repository.PagamentosRepository;
 import breno.org.desafio.SEFA.utils.EnumMetodosDePagamentos;
 import breno.org.desafio.SEFA.utils.EnumStatusPagamento;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -74,14 +78,42 @@ public class PagamentosServices {
 		
 	}
 	
-	public ResponseEntity<?> listarPagamentos ( Object filtro){
+	public ResponseEntity<?> listarPagamentos ( FiltroDTO filtro){
 		
 		try{
-		filtro
+		if( filtro.codigoDebito() != null){
+			List<Pagamentos> response = pagamentosRepository.findAllByCodigoDebito(Integer.parseInt(filtro.codigoDebito().trim()));
+			return new ResponseEntity<>(response,HttpStatus.OK);
+			}
 		
-		return new ResponseEntity<>(pagamentosRepository.findByStatus(filtro),HttpStatus.OK);
+			if ( filtro.CpfCnpj().isPresent() ){
+				List<Pagamentos> response =  pagamentosRepository.findAllByCpfCnpj(filtro.CpfCnpj().get());
+				
+				return new ResponseEntity<>(response,HttpStatus.OK);
+			}
+			if(filtro.statusPagamento().isPresent()){
+				List<Pagamentos> response =pagamentosRepository.findAllByStatus(filtro.statusPagamento().get());
+				return new ResponseEntity<>(response,HttpStatus.OK);
+			}
+		return new ResponseEntity<>(pagamentosRepository.findAll(),HttpStatus.OK);
 		}catch ( Exception exception ){
 			return new ResponseEntity<>(exception.getMessage(),HttpStatus.OK);
+		}
+		
+	}
+	
+	public ResponseEntity<?> exclusaoPagamento(UUID idPagamento){
+		try{
+			
+			Optional<Pagamentos> processandoPagamento = pagamentosRepository.findById(idPagamento);
+			if(processandoPagamento.get().getStatus() == EnumStatusPagamento.processando){
+			pagamentosRepository.deleteById(idPagamento);
+			return new ResponseEntity<>("Ação concluida com sucesso!",HttpStatus.OK);
+			}
+			return new ResponseEntity<>("Não foi possivel concluir essa operação",HttpStatus.OK);
+			
+		} catch ( Exception exception ){
+		return new ResponseEntity<>(exception.getMessage(),HttpStatus.BAD_REQUEST);
 		}
 		
 	}

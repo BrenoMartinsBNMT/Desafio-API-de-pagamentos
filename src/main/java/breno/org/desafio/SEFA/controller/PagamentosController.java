@@ -1,5 +1,6 @@
 package breno.org.desafio.SEFA.controller;
 
+import breno.org.desafio.SEFA.DTO.FiltroDTO;
 import breno.org.desafio.SEFA.DTO.PagamentosDTO;
 
 import breno.org.desafio.SEFA.DTO.StatusDTO;
@@ -11,6 +12,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/pagamentos")
@@ -28,7 +31,7 @@ public class PagamentosController {
 		}
 	}
 	@PutMapping("/atualizarStatus")
-	public ResponseEntity<?> atualizarStatusPagamento( @Valid @RequestBody StatusDTO statusPagamento){
+	public ResponseEntity<?> atualizarStatusPagamento(@Valid  @RequestBody StatusDTO statusPagamento){
 		
 		try {
 			return new ResponseEntity<>(pagamentosServices.atualizarStatusPagamento(statusPagamento),HttpStatus.CREATED);
@@ -37,12 +40,22 @@ public class PagamentosController {
 		}
 	}
 	@GetMapping("")
-	public ResponseEntity<?> listarPagamentos( @Param ("filtro") Object filtro ){
+	public ResponseEntity<?> listarPagamentos(  FiltroDTO filtro ){
 		try {
-			System.out.println(filtro);
+			System.out.println(filtro.getClass().getName());
 			return new ResponseEntity<>(pagamentosServices.listarPagamentos(filtro), HttpStatus.OK);
 		}catch ( Exception exception ) {
-			return new ResponseEntity<>("dsadsa",HttpStatus.OK);
+			return new ResponseEntity<>(exception.getMessage(),HttpStatus.BAD_REQUEST);
+		}
+	}
+	@DeleteMapping("")
+	public ResponseEntity<?> excluirPagamentos(@Param("idPagamento") String idPagamento ){
+		System.out.println(idPagamento);
+		try {
+			UUID id = UUID.fromString(idPagamento);
+			return pagamentosServices.exclusaoPagamento(id);
+		} catch ( Exception exception ){
+			return new ResponseEntity<>(exception.getMessage(),HttpStatus.BAD_REQUEST);
 		}
 	}
 	

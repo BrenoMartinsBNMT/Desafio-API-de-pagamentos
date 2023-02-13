@@ -8,13 +8,18 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface PagamentosRepository extends JpaRepository<Pagamentos, UUID> {
 	
-	Pagamentos findByStatus(EnumStatusPagamento statusPagamento);
+	List<Pagamentos> findAllByCodigoDebito( int codigoDebito);
+	List<Pagamentos> findAllByStatus(EnumStatusPagamento statusPagamento);
+	List<Pagamentos> findAllByCpfCnpj(String CpfCnpj);
+	
+	
 	@Transactional
 	@Modifying
 	@Query("update Pagamentos set status = ?1 where id= ?2")
