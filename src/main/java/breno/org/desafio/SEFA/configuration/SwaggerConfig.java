@@ -1,4 +1,4 @@
-package breno.org.desafio.SEFA;
+package breno.org.desafio.SEFA.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
